@@ -82,16 +82,20 @@ public class PlayerMovement : MonoBehaviour
 	// wrapped around to a large *negative* value, which put the player far
 	// *behind* the terrain instead of in front, making it fully invisible
 	// with no error anywhere. This offset is comfortably below that limit
-	// and well above the terrain's own max ((15+15)*100 = 3000), so the
-	// player always draws on top of the ground. It's a deliberate
+	// and well above the terrain's own magnitude ((15+15)*100 = 3000), so
+	// the player always draws on top of the ground. It's a deliberate
 	// simplification: the terrain has no tall structures yet that should
 	// occlude the player, so "always on top of ground" is correct for now.
 	private const int PlayerSortingBias = 20000;
 
+	// Negated to match TerrainGenerator's sortingOrder convention (smaller
+	// grid-sum = drawn later/on top -- see the comment there for why), so
+	// this stays consistent if PlayerSortingBias is ever reduced for real
+	// interleaving with terrain instead of always drawing on top of it.
 	private void UpdateSortingOrder()
 	{
 		float virtualGridSum = 2f * transform.position.y / cellSizeY;
-		_renderer.sortingOrder = Mathf.RoundToInt(virtualGridSum * 100f) + PlayerSortingBias;
+		_renderer.sortingOrder = -Mathf.RoundToInt(virtualGridSum * 100f) + PlayerSortingBias;
 	}
 
 	private static int DirectionFromVector(Vector2 dir)

@@ -76,10 +76,18 @@ public class TerrainGenerator : MonoBehaviour
 
 		var renderer = go.AddComponent<SpriteRenderer>();
 		renderer.sprite = sprite;
+		// Negative: a tile's bottom skirt only gets covered by a
+		// SMALLER-sum neighbor's render range, not a larger one (checked by
+		// direct calculation -- a tile's rendered vertical span is
+		// [worldY - 0.75*spriteHeight, worldY + 0.25*spriteHeight], and only
+		// the smaller-sum neighbor's span reaches down to this tile's tip).
+		// Getting this backwards (larger sum on top) left small fragments of
+		// farther-back tiles visible at ground-type transition edges, since
+		// same-type neighbors hide the same mistake by looking identical.
 		// Scaled by 100 to leave room for the player's finer-grained,
 		// continuous sortingOrder (see PlayerMovement.UpdateSortingOrder)
 		// to interleave between rows without exactly tying a tile's order.
-		renderer.sortingOrder = (x + y) * 100;
+		renderer.sortingOrder = -(x + y) * 100;
 	}
 
 	private Sprite ForcedSprite(string name) => name switch
