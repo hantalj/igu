@@ -20,7 +20,7 @@ public class DebugSceneDump : MonoBehaviour
 				$"cullingMask={cam.cullingMask} nearClip={cam.nearClipPlane} farClip={cam.farClipPlane} depth={cam.depth} " +
 				$"targetTexture={cam.targetTexture} enabled={cam.enabled} isActiveAndEnabled={cam.isActiveAndEnabled}");
 
-		foreach (var sr in FindObjectsByType<SpriteRenderer>(FindObjectsSortMode.None))
+		foreach (var sr in FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Exclude))
 		{
 			if (sr.gameObject.name.StartsWith("Tile_"))
 				continue; // skip the 256 terrain tiles, too noisy
