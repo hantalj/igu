@@ -1,0 +1,9 @@
+8 Directional Knight Character
+
+by Hormelz
+https://hormelz.itch.io/8-directional-knight
+
+License: Creative Commons Zero v1.0 Universal (CC0 1.0)
+https://creativecommons.org/publicdomain/zero/1.0/
+
+Only the free "KnightBasic" bundle (Walk, Idle) is used here.
