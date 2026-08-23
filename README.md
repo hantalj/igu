@@ -24,7 +24,7 @@ Unity -batchmode -nographics -quit -projectPath . -executeMethod BuildScript.Bui
 
 The game launches into a main menu (Start New Game / Start Demo / Exit Igu). "Start Demo" loads the fixed-seed terrain everything above was verified against; "Start New Game" rolls a fresh random seed. To skip the menu and launch straight into the demo (handy for quick manual testing), set `IGU_SKIP_MENU=1` or pass `-skipmenu` on the command line.
 
-WASD/arrow keys move the knight around a 16x16 procedurally generated isometric landscape (water/sand/grass/dirt/stone/snow bands from Perlin noise). The character walks and faces one of 8 directions based on movement, idling facing the same direction when stopped.
+WASD/arrow keys move the knight around a 16x16 procedurally generated isometric landscape (water/sand/grass/dirt/stone/snow bands from Perlin noise). The character walks and faces one of 8 directions based on movement, idling facing the same direction when stopped. Once gameplay has started (New Game or Demo), Escape quits the game; the main menu itself has no Escape shortcut, since it already has its own Exit Igu button.
 
 ## Project layout
 
@@ -36,6 +36,8 @@ WASD/arrow keys move the knight around a 16x16 procedurally generated isometric 
 - `Assets/Scripts/CameraFollow.cs` — keeps the camera on the player without parenting (see gotcha below)
 - `Assets/Scripts/MainMenuController.cs` — wires the three menu buttons and the menu-skip bypass
 - `Assets/Scripts/GameSession.cs` — the one piece of state passed from menu to game scene (new-game seed vs. demo's fixed seed)
+- `Assets/Scripts/GameExit.cs` — shared `Application.Quit()`/editor-stop logic used by both the menu's Exit Igu button and `QuitOnEscape`
+- `Assets/Scripts/QuitOnEscape.cs` — quits the game when Escape is pressed during gameplay (Main scene only)
 - `Assets/Scripts/AutoScreenshot.cs`, `DebugSceneDump.cs`, `DebugCellSizeOverride.cs` — inert unless specific env vars are set; used throughout development to verify real rendered output rather than trusting code review alone
 - `Assets/Editor/SceneBuilder.cs` — builds `Main.unity` from code (`Tools > Build Main Scene`)
 - `Assets/Editor/MainMenuBuilder.cs` — builds `MainMenu.unity` from code (`Tools > Build Main Menu Scene`)
@@ -54,6 +56,8 @@ WASD/arrow keys move the knight around a 16x16 procedurally generated isometric 
 **The camera doesn't parent to the Player**, even though that's the obvious/common pattern (and is what igrunner does in Godot). Parenting the camera under Player made the Player's own SpriteRenderer stop rendering entirely — reproduced multiple times, root cause not fully isolated, so `CameraFollow.cs` just tracks the player's position in `LateUpdate()` without parenting, which works reliably.
 
 **`SpriteRenderer.sortingOrder` is backed by an `Int16`** despite the C# property being typed `int` — an early attempt to bias the player's sort order by a large constant (`+100000`) silently wrapped around to a large *negative* number, putting the player far behind the terrain instead of in front, with no error anywhere. This is the actual reason the player was invisible for a long stretch of development (a red herring about camera parenting looked plausible at first, since un-parenting happened to coincide with other changes, but the real fix was keeping the sorting bias within Int16 range).
+
+**Editor scripts must wire button clicks with `UnityEventTools.AddPersistentListener`, not `onClick.AddListener`.** `MainMenuBuilder` originally used `onClick.AddListener(controller.StartNewGame)` (and the other two buttons) while constructing the scene. `AddListener` only registers a *runtime* listener; called from an editor script executed via `-executeMethod` — a separate process that builds the scene and exits — that registration lives in the transient process's memory and is never serialized into the saved `.unity` file. The scene looked correct, the game compiled, and a test hook that called the controller methods directly even "passed" — but all three menu buttons did nothing when actually clicked, because their `m_PersistentCalls` were empty. `UnityEditor.Events.UnityEventTools.AddPersistentListener` is the editor-scripting equivalent of wiring a listener by hand in the Inspector, and does serialize. Caught only after replacing the direct-method-call test hook with one that simulates a real click through `UnityEngine.EventSystems.ExecuteEvents.Execute(...)` — a reminder that a test which bypasses the actual UI event path can pass while the UI itself is completely broken.
 
 **`com.unity.ugui` had to be added to `Packages/manifest.json` explicitly** for the main menu's `Canvas`/`Button`/`Text` — it's bundled with the Editor install (no network fetch needed) but isn't a default dependency of a project created via `-createProject`, unlike the base 3D/2D modules.
 
