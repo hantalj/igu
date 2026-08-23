@@ -22,6 +22,7 @@ public static class SceneBuilder
 
 		BuildGrid();
 		PlayerBuilder.Build();
+		BuildGameManager();
 
 		EditorSceneManager.SaveScene(scene, ScenePath);
 		Debug.Log($"Saved scene to {ScenePath}");
@@ -50,6 +51,14 @@ public static class SceneBuilder
 		terrain.dirtSprite = LoadTileSprite("dirt");
 		terrain.stoneSprite = LoadTileSprite("stone");
 		terrain.snowSprite = LoadTileSprite("snow");
+	}
+
+	// Escape-to-quit only applies once gameplay has actually started -- see
+	// QuitOnEscape's own comment for why this doesn't also live on the menu.
+	private static void BuildGameManager()
+	{
+		var go = new GameObject("GameManager");
+		go.AddComponent<QuitOnEscape>();
 	}
 
 	private static Sprite LoadTileSprite(string name) =>

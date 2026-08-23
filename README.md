@@ -24,7 +24,7 @@ Unity -batchmode -nographics -quit -projectPath . -executeMethod BuildScript.Bui
 
 The game launches into a main menu (Start New Game / Start Demo / Exit Igu). "Start Demo" loads the fixed-seed terrain everything above was verified against; "Start New Game" rolls a fresh random seed. To skip the menu and launch straight into the demo (handy for quick manual testing), set `IGU_SKIP_MENU=1` or pass `-skipmenu` on the command line.
 
-WASD/arrow keys move the knight around a 16x16 procedurally generated isometric landscape (water/sand/grass/dirt/stone/snow bands from Perlin noise). The character walks and faces one of 8 directions based on movement, idling facing the same direction when stopped.
+WASD/arrow keys move the knight around a 16x16 procedurally generated isometric landscape (water/sand/grass/dirt/stone/snow bands from Perlin noise). The character walks and faces one of 8 directions based on movement, idling facing the same direction when stopped. Once gameplay has started (New Game or Demo), Escape quits the game; the main menu itself has no Escape shortcut, since it already has its own Exit Igu button.
 
 ## Project layout
 
@@ -36,6 +36,8 @@ WASD/arrow keys move the knight around a 16x16 procedurally generated isometric 
 - `Assets/Scripts/CameraFollow.cs` — keeps the camera on the player without parenting (see gotcha below)
 - `Assets/Scripts/MainMenuController.cs` — wires the three menu buttons and the menu-skip bypass
 - `Assets/Scripts/GameSession.cs` — the one piece of state passed from menu to game scene (new-game seed vs. demo's fixed seed)
+- `Assets/Scripts/GameExit.cs` — shared `Application.Quit()`/editor-stop logic used by both the menu's Exit Igu button and `QuitOnEscape`
+- `Assets/Scripts/QuitOnEscape.cs` — quits the game when Escape is pressed during gameplay (Main scene only)
 - `Assets/Scripts/AutoScreenshot.cs`, `DebugSceneDump.cs`, `DebugCellSizeOverride.cs` — inert unless specific env vars are set; used throughout development to verify real rendered output rather than trusting code review alone
 - `Assets/Editor/SceneBuilder.cs` — builds `Main.unity` from code (`Tools > Build Main Scene`)
 - `Assets/Editor/MainMenuBuilder.cs` — builds `MainMenu.unity` from code (`Tools > Build Main Menu Scene`)

@@ -55,13 +55,7 @@ public class MainMenuController : MonoBehaviour
 		SceneManager.LoadScene(GameSceneName);
 	}
 
-	public void ExitGame()
-	{
-		Application.Quit();
-#if UNITY_EDITOR
-		UnityEditor.EditorApplication.isPlaying = false;
-#endif
-	}
+	public void ExitGame() => GameExit.Quit();
 
 	private static bool ShouldBypassMenu()
 	{
