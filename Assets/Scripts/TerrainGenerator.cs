@@ -38,6 +38,12 @@ public class TerrainGenerator : MonoBehaviour
 	private void Awake()
 	{
 		_grid = GetComponent<Grid>();
+
+		// Set by MainMenuController before loading this scene: null for
+		// "Start Demo" (keep the fixed seed above), a value for
+		// "Start New Game" (a freshly rolled one).
+		if (GameSession.NoiseSeedOverride.HasValue)
+			noiseSeedOffset = GameSession.NoiseSeedOverride.Value;
 	}
 
 	private void Start()

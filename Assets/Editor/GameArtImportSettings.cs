@@ -23,6 +23,7 @@ public class GameArtImportSettings : AssetPostprocessor
 {
 	private const string TilesPath = "Assets/Art/Tiles/";
 	private const string KnightPath = "Assets/Art/Knight/";
+	private const string UiPath = "Assets/Art/UI/";
 
 	private const float PixelsPerUnit = 111f;
 	private const int KnightCellSize = 256;
@@ -51,6 +52,20 @@ public class GameArtImportSettings : AssetPostprocessor
 			var importer = (TextureImporter)assetImporter;
 			importer.spriteImportMode = SpriteImportMode.Multiple;
 			importer.spritesheet = SliceGrid(assetPath);
+		}
+		else if (assetPath.StartsWith(UiPath))
+		{
+			// Painted/gradient UI art, not pixel art -- Bilinear filtering
+			// (not Point) so it doesn't look chunky when scaled, and PPU
+			// doesn't matter since UI Images stretch to their RectTransform.
+			var importer = (TextureImporter)assetImporter;
+			importer.textureType = TextureImporterType.Sprite;
+			importer.spriteImportMode = SpriteImportMode.Single;
+			importer.filterMode = FilterMode.Bilinear;
+			importer.mipmapEnabled = false;
+			importer.wrapMode = TextureWrapMode.Clamp;
+			importer.alphaIsTransparency = true;
+			importer.textureCompression = TextureImporterCompression.Uncompressed;
 		}
 	}
 

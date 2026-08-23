@@ -17,9 +17,14 @@ public static class BuildScript
 		if (string.IsNullOrEmpty(outputPath))
 			outputPath = "Builds/igu.app";
 
+		// MainMenu first (the entry point the player actually launches into),
+		// then Main (the game/demo scene) for MainMenuController to load.
+		// Launching straight into the demo -- bypassing the menu -- is done
+		// via IGU_SKIP_MENU=1 or a "-skipmenu" arg at *run* time (see
+		// MainMenuController), not by changing which scene loads first here.
 		var options = new BuildPlayerOptions
 		{
-			scenes = new[] { "Assets/Scenes/Main.unity" },
+			scenes = new[] { "Assets/Scenes/MainMenu.unity", "Assets/Scenes/Main.unity" },
 			locationPathName = outputPath,
 			target = BuildTarget.StandaloneOSX,
 			options = BuildOptions.None,
