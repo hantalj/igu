@@ -1,4 +1,5 @@
 using UnityEditor;
+using UnityEditor.Events;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -38,9 +39,19 @@ public static class MainMenuBuilder
 
 		var controllerGo = new GameObject("MainMenuController");
 		var controller = controllerGo.AddComponent<MainMenuController>();
-		newGameBtn.GetComponent<Button>().onClick.AddListener(controller.StartNewGame);
-		demoBtn.GetComponent<Button>().onClick.AddListener(controller.StartDemo);
-		exitBtn.GetComponent<Button>().onClick.AddListener(controller.ExitGame);
+		// UnityEventTools.AddPersistentListener (not onClick.AddListener) --
+		// AddListener only registers a *runtime* listener. Called from this
+		// editor script, that registration lives in the transient
+		// scene-building process's memory and is never written into the
+		// saved .unity file, so none of the three buttons actually did
+		// anything when clicked in the built game despite compiling and
+		// "working" under the IGU_TEST_ACTION hook, which invokes the C#
+		// methods directly and so never exercised the click wiring at all.
+		// AddPersistentListener is the editor-scripting equivalent of
+		// wiring the listener by hand in the Inspector, and does serialize.
+		UnityEventTools.AddPersistentListener(newGameBtn.GetComponent<Button>().onClick, controller.StartNewGame);
+		UnityEventTools.AddPersistentListener(demoBtn.GetComponent<Button>().onClick, controller.StartDemo);
+		UnityEventTools.AddPersistentListener(exitBtn.GetComponent<Button>().onClick, controller.ExitGame);
 
 		EditorSceneManager.SaveScene(scene, ScenePath);
 		Debug.Log($"Saved scene to {ScenePath}");

@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 
 /// <summary>
@@ -19,15 +20,27 @@ public class MainMenuController : MonoBehaviour
 			return;
 		}
 
-		// Verification-only: lets a headless test build trigger a button's
-		// action directly, since there's no mouse to click with. Mirrors
-		// PlayerMovement's IGU_TEST_KEY pattern.
-		switch (System.Environment.GetEnvironmentVariable("IGU_TEST_ACTION"))
+		// Verification-only: simulates a real click through Unity's actual
+		// UI event system (IPointerClickHandler), exercising the Button
+		// component and its serialized onClick listeners exactly like a
+		// physical click would -- unlike an earlier version of this hook
+		// that called the controller method directly, which "passed" even
+		// when the buttons' click wiring was completely broken (see
+		// MainMenuBuilder's AddPersistentListener comment).
+		string targetButton = System.Environment.GetEnvironmentVariable("IGU_TEST_CLICK");
+		if (!string.IsNullOrEmpty(targetButton))
+			SimulateClick(targetButton);
+	}
+
+	private static void SimulateClick(string buttonName)
+	{
+		var buttonGo = GameObject.Find(buttonName);
+		if (buttonGo == null)
 		{
-			case "newgame": StartNewGame(); break;
-			case "demo": StartDemo(); break;
-			case "exit": ExitGame(); break;
+			Debug.LogError($"IGU_TEST_CLICK: no GameObject named '{buttonName}' found");
+			return;
 		}
+		ExecuteEvents.Execute(buttonGo, new PointerEventData(EventSystem.current), ExecuteEvents.pointerClickHandler);
 	}
 
 	public void StartNewGame()
